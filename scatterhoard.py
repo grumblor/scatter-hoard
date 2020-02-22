@@ -35,7 +35,6 @@
 #during batch runs, control c only cancels the current file but the file is still recorded in the DB...
 #acorn argument to create acorns of a certain size rather than number of chunks.
 
-#import ctypes
 import sys
 import shutil
 import random

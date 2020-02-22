@@ -917,14 +917,6 @@ def checkForStop():
 	else:
 		return False
 
-def writeLabel(text):
-	#print(shconfig.guiObj)
-	#print(shconfig.label)
-	#if shconfig.gui == True:
-	#	shconfig.label.text = text
-	#	shconfig.label.pack()
-	return 0
-
 def queueRun():
 	b = backup()
 	while (shconfig.backJobs != []) or (shconfig.retrieveJobs != []):
@@ -933,8 +925,6 @@ def queueRun():
 			b.backUpRun(shconfig.backJobs.pop())
 		if (shconfig.backJobs == []) and (backup.running == 0) and (shconfig.retrieveJobs != []):
 			b.retrieve(shconfig.retrieveJobs.pop())
-		#shconfig.guiObj.backUpTab.queueTxt.Clear()
-		#shconfig.guiObj.retrieveTab.fileListField.Clear()
 	while (shconfig.tagJobs != []):
 		time.sleep(0.1)
 		if shconfig.tagLock == False:
