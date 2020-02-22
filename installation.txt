@@ -2,8 +2,8 @@ WINDOWS
 
 1. clone/download the scatter-hoard package. Extract into desired directory
 2. install python 3 from python.org using the direction here: https://github.com/BurntSushi/nfldb/wiki/Python-&-pip-Windows-installation
-3. open a command line, run pip install Tkinter to allow the gui window
-4. run pip install paramiko for ssh support
+3. open a command line, run pip3 install Tkinter to allow the gui window
+4. run pip3 install paramiko for ssh support
 5. finally, to run scatter-hoard run the double click the .bat file scatter-hoard-win.bat
 
 LINUX
@@ -11,7 +11,7 @@ LINUX
 1. clone/download the scatter-hoard package. Extract into desired directory
 2. python should already be installed, but follow your distros instructions for installing python
 	Debian/Ubuntu is usually just sudo apt-get install python
-3. install pip in the same way, ex: sudo apt-get install python-pip
-4. run pip install Tkinteer to allow the gui window
-5. run pip install paramiko to allow ssh support
-6. finally, run the bash script scatter-hoard-bash.sh
+3. install pip3 in the same way, ex: sudo apt-get install python-pip
+4. run apt-get install python3-tk to allow the gui window
+5. run pip3 install paramiko to allow ssh support
+6. finally, run the bash script scatter-hoard-bash.sh or python3 scatterhoard.py
