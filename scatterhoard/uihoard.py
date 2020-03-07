@@ -161,11 +161,11 @@ def printInPlace(s):
 	
 def dirBatch(command):
 	filenames = []
-	
+	fileList = []
 	for c in command:
-		if c == '-t':
+		if c in ['-t', '--tag']:
 			shconfig.addTagsCheck = True
-		if c not in ['-t', 'batch']:
+		if c not in ['-t', 'batch', '-d', '--dir', '--batch', 'backup', 'put', 'p', '--tag']:
 			dirArg = c
 			dirArg = fileutilhoard.quoteScan(dirArg)
 	
@@ -180,27 +180,30 @@ def dirBatch(command):
 		return 1
 	for file in dir[2]:
 		filePath = os.path.join(dirArg, file)
-		bResult = b.backUpRun(filePath,batch=1)
-		if bResult == 0:
-			filenames.append(file)
-		#if (frame.dlg1): frame.dlg1.Destroy()
+		#bResult = b.backUpRun(filePath,batch=1)
+		shconfig.backJobs.append(filePath)
+		filenames.append(file)
+	failList = backuphoard.queueRun()
+
 	if (shconfig.addTagsCheck == True) and (len(filenames) > 0):
+		if shconfig.args.tags:
+			tags = shconfig.args.tags
+			#tags handled in the backuprun() method, but may need to be run again if original batch job failed before tags recorded.
+		else:
+			print("Set tags for all the files backed up in this batch.")
+			print("Seperate with spaces, tags cannot contain spaces.")
+			tags = input()
+			tags = tags.split()
+		badChar1, onlySpace1 = fileutilhoard.checkFileNameChar(tags)	
 		for f in filenames:
-			justFileName = os.path.basename(f)
-			if shconfig.args.tags:
-				tags = shconfig.args.tags
-				#tags handled in the backuprun() method, but may need to be run again if original batch job failed before tags recorded.
-			else:
-				print(("Set tags for: " + justFileName))
-				print("Seperate with spaces, tags cannot contain spaces")
-				tags = input()
-				tags = tags.split()
-			badChar1, onlySpace1 = fileutilhoard.checkFileNameChar(tags)
-			if badChar1 != 0:
-				print(("You entered an invalid character for tags. No tags will be added for this file, but tags can be added later. ? or help for more info: " + "\"/\\%?*:|<>\'"))
-			for tag in tags:
-				scannedTag = fileutilhoard.quoteScan(tag)
-				dbhoard.addTag(justFileName, scannedTag)
+			if f not in failList:
+				justFileName = os.path.basename(f)
+				if badChar1 != 0:
+					print(("You entered an invalid character for tags. No tags will be added for this file, but tags can be added later. ? or help for more info: " + "\"/\\%?*:|<>\'"))
+					tags = []
+				for tag in tags:
+					scannedTag = fileutilhoard.quoteScan(tag)
+					dbhoard.addTag(justFileName, scannedTag)
 	shconfig.addTagsCheck = False	
 
 
@@ -615,17 +618,25 @@ def mainLoopCLI():
 			print((fileutilhoard.idGen(100)))
 		if command[0] in ['backup', 'put', 'p']:
 			tagPut = False
-			backingup = backuphoard.backup()
+			batchProcessed = False
+			for c in command:
+				if c in ["--dir", "-d", "--batch"]:
+					dirBatch(command)
+					batchProcessed = True
+					break
+			if batchProcessed:
+				continue
 			for c in command:
 				if c in ["--tag", "-t"]:
 					tagPut = True
+					tag = input('\nPlease supply tags for file(s) being backed up.\nSeperate tags by a space if there are multiple\n ')
+					tag = tag.split()
+			backingup = backuphoard.backup()
 			for c in command:
 				if c not in ["p", "put", "backup", "-t", "--tag"]:
 					backingup.backUpRun(c)
 			for c in command:		
 				if (tagPut == True) and (c not in ['p','put','backup','-t','--tag']):
-					tag = input('\nPlease supply a tag for the file ' + c + '\nSeperate tags by a space if there are multiple\n ')
-					tag = tag.split()
 					justFileName = os.path.basename(c)
 					justFileName = fileutilhoard.quoteScan(justFileName)
 					for t in tag:
@@ -875,6 +886,7 @@ def mainLoopCLI():
 			hashSearch = False
 			getFiles = False
 			totalFileSize = 0
+			numOfFiles = 0
 			fileNames = []
 			for c in command:
 				if c == "-t":
@@ -905,6 +917,7 @@ def mainLoopCLI():
 			counter = 0
 			if len(fileNames) != 0:
 				inBox('Found Files', bottomConnection=3)
+				numOfFiles = len(fileNames)
 			for f in fileNames:
 				#fid = getIDFromFileName(f)
 				fileInfo = dbhoard.getFileInfo(f)
@@ -927,7 +940,7 @@ def mainLoopCLI():
 				underBox(p2, end=False, space=3, nextLine=True)
 				underBox("   File Hash: " + fileInfo[0][1], space=3, end=False, nextLine=True)
 				#else:
-			underBox("   End of files", space=3, end=True)
+			underBox("   " + str(numOfFiles) + " files found.", space=3, end=True)
 			if getFiles == True:
 				totalFileSizeMB = str(round(totalFileSize/1048576)) + " MB"
 				print('\nTotal filesize of search results: ' + totalFileSizeMB)
@@ -1064,8 +1077,8 @@ def mainLoopCLI():
 				underBox("   [workingDB] Current working database: " + shconfig.workingDatabase)
 				underBox("   [writedir] Write retrieved files to: " + shconfig.retrieveWriteDir)
 				underBox("   [replicate] Replication number of chunks files: " + str(shconfig.numOfChunkCopies)) 
-				underBox("   Total bytes of stored data chunks: " +str(chunkTotal) + " ( ~" + str(round(chunkTotal/1048576)) + " MB) ")
-				underBox("   Total bytes of files stored (Non redundant dataset): " + str(fileTotal) + " ( ~" + str(round(fileTotal/1048576)) + " MB) ")
+				underBox("   Total bytes of stored data: " +str(chunkTotal) + " ( ~" + str(round(chunkTotal/1048576)) + " MB) ")
+				underBox("   Total bytes of disk space used: " + str(fileTotal) + " ( ~" + str(round(fileTotal/1048576)) + " MB) ")
 				underBox("   Items in brackets are editable with the config command. Add them as arguments to the \'config\' command. ", end=True)
 				continue
 		if command[0] == "writeto":

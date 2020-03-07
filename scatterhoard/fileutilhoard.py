@@ -434,7 +434,7 @@ def readDup(dupFile, ssh="Nil"):
 		print(e)
 		return 1
 	
-def writeDat(hashOfFile, hashOfChunk, chunkName2, chunkFO):
+def writeDat(hashOfFile, hashOfChunk, chunkName2, chunkFO, silent=0):
 	success = 0
 	try:
 		with open(chunkName2,'wb') as f:
@@ -442,7 +442,8 @@ def writeDat(hashOfFile, hashOfChunk, chunkName2, chunkFO):
 			f.write(chunkFO.read())
 			f.write(hashOfFile + hashOfChunk)
 			f.close()
-			print(("Created dat file: " + chunkName2))
+			if silent == 0:
+				print(("Created dat file: " + chunkName2))
 	except IOError as e:
 		print(("ERROR WRITING TO DAT FILE " + str(chunkName2)))
 		print(("I/O error({0}): {1}".format(e.errno, e.strerror)))

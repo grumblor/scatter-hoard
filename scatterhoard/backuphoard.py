@@ -39,7 +39,7 @@ class backup():
 		self.command = shconfig.command
 		self.writeDir = shconfig.retrieveWriteDir
 
-	def chunkUp(self, fileObj, fsize, fileNameOriginal, onlineStorage=[]): 
+	def chunkUp(self, fileObj, fsize, fileNameOriginal, onlineStorage=[], batch=0): 
 		#chunkUp() cuts up the file, hashes chunks, records them and spreads them to multiple sotrage locations. Used by backuprun
 		running = 0
 		counter = 0
@@ -66,8 +66,8 @@ class backup():
 			return 1
 		if hexHashOfFile == "empty":
 			return 1
-		print(("Hash of File : " + hexHashOfFile))
-		print("Chunking file...")
+		#print(("Hash of File : " + hexHashOfFile))
+		#print("Chunking file...")
 		storeLen = len(onlineStorage)
 		randomNumber = random.randint(0, storeLen - 1)
 		storageLoc = onlineStorage[randomNumber]
@@ -97,7 +97,7 @@ class backup():
 					fsize1, chunkFO = fileutilhoard.safeReadFile(fileNameOriginal, counter1)
 				chunkFOread = 1
 				if storageLoc[2] in ["", "Nil"]:
-					writeSuccess = fileutilhoard.writeDat(hashOfFile, hashOfChunk, chunkName2, chunkFO)
+					writeSuccess = fileutilhoard.writeDat(hashOfFile, hashOfChunk, chunkName2, chunkFO, silent=batch)
 					if writeSuccess == 1:
 						dbhoard.setReadOnlyStorage(storageLoc[1])
 						onlineStorage = initStorage()
@@ -115,7 +115,7 @@ class backup():
 					chunkFO.seek(0)
 					chunkFO2.write(chunkFO.read())
 					chunkFO2.write(hashOfFile + hashOfChunk)
-					writeSuccess = sshcomhoard.putChunkSFTP(storageLoc[0], storageLoc[2], chunkName3, chunkFO2)
+					writeSuccess = sshcomhoard.putChunkSFTP(storageLoc[0], storageLoc[2], chunkName3, chunkFO2, silent=batch)
 					if writeSuccess == 1:
 						dbhoard.setReadOnlyStorage(storageLoc[1])
 						onlineStorage = initStorage()
@@ -215,19 +215,20 @@ class backup():
 
 		if fileToEncode != "":
 			fileName = fileToEncode
-		if batch != 1:
+		if batch == 0:
 			print(("Backing up: " + fileName))
 		justFileName = os.path.basename(fileName)
 		justPath = os.path.dirname(fileName)
 		badChar, onlySpace = fileutilhoard.checkFileNameChar(justFileName)
 		if badChar == 1:
-			if batch != 1:
+			if batch == 0:
 				print("File name being backed up cannot contain the following characters!")
 				print("""
 				"\"", "/", "\\", "%", "?", "*", ":", "|", "<", ">", "\'"
 					""")
 				print("Backup failed")				
 			#return 0 why was this 0 originally? o_o
+			self.stopBackup()
 			return 1
 
 		if justPath == "":
@@ -255,9 +256,9 @@ class backup():
 			return 1
 		try:
 			with open(fileName,'rb') as fileObj:
-				hashOfFile = self.chunkUp(fileObj, fsize, fileName)
+				hashOfFile = self.chunkUp(fileObj, fsize, fileName, batch=batch)
 				if hashOfFile == 1:
-					if batch != 1:
+					if batch == 0:
 						print("Backup halted...")
 					self.stopBackup()
 					return 1
@@ -279,7 +280,7 @@ class backup():
 				badChar1, onlySpace1 = fileutilhoard.checkFileNameChar(tag)
 				if (tag != "") and (badChar1 != 1):
 					dbhoard.addTag(fileutilhoard.quoteScan(justFileName), fileutilhoard.quoteScan(tag))
-		print((justFileName + " has been backed up."))	
+		print("[ File backed up ] " + justFileName )	
 		self.stopBackup()
 		return 0
 
@@ -917,14 +918,25 @@ def checkForStop():
 	else:
 		return False
 
-def queueRun():
+def queueRun(batch=1):
 	b = backup()
+	failure = False
+	handledFile = ""
+	failList = []
 	while (shconfig.backJobs != []) or (shconfig.retrieveJobs != []):
 		time.sleep(0.1)
 		if (backup.running == 0) and (shconfig.backJobs != []):
-			b.backUpRun(shconfig.backJobs.pop())
+			handledFile = shconfig.backJobs.pop()
+			if b.backUpRun(handledFile, batch=batch):
+				failure = True
+				failList.append(handledFile)
 		if (shconfig.backJobs == []) and (backup.running == 0) and (shconfig.retrieveJobs != []):
-			b.retrieve(shconfig.retrieveJobs.pop())
+			handledFile = shconfig.retrieveJobs.pop()
+			if b.retrieve(handledFile):
+				failure = True
+				failList.append(handledFile)
+		print(handledFile)
+		print(backup.running)
 	while (shconfig.tagJobs != []):
 		time.sleep(0.1)
 		if shconfig.tagLock == False:
@@ -937,7 +949,7 @@ def queueRun():
 				for tag in tags:
 					addTag(justFileName, tag)
 			shconfig.tagLock = False
-			
+	return failList
 
 
 mainBackObj = None

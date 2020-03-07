@@ -160,7 +160,7 @@ def putTextSFTP(path, sshhost, target, text):
 	fo.close()
 	return putReturn
 
-def putChunkSFTP(path, sshhost, target, writeFO, integrity=True):
+def putChunkSFTP(path, sshhost, target, writeFO, integrity=True, silent=0):
 	#writeFO is an open fileobject containing chunk data.
 	writeFO.seek(0)
 	writeFO.seek(0,2)
@@ -195,7 +195,8 @@ def putChunkSFTP(path, sshhost, target, writeFO, integrity=True):
 			delFileSFTP(chunkToGet, sshhost)
 			return 1
 		else:
-			print(("Created dat file: " + sshhost + ":" + path + target)) 
+			if silent == 0:
+				print(("Created dat file: " + sshhost + ":" + path + target)) 
 			return 0
 	else:
 		sftpCom.close()

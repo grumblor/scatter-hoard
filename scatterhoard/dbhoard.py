@@ -38,7 +38,7 @@ def initDB():
 		createTagTable()
 		createChunkStoreLocTable()
 		createConfigTable()
-
+		createAutoDirectoryTable()
 
 def createTagTable():
 	c = sqlite3.connect(shconfig.SELECTED_DB)
@@ -46,6 +46,13 @@ def createTagTable():
 	cursor.execute("create table tags(id integer primary key autoincrement, filename text, tag text)")
 	c.commit()
 	c.close()
+	
+def createAutoDirectoryTable():
+	c = sqlite3.connect(shconfig.SELECTED_DB)
+	cursor = c.cursor()
+	cursor.execute("create table autodir(id integer primary key autoincrement, dir text, autoTag text, onoff int)")
+	c.commit()
+	c.close()	
 	
 def createConfigTable():
 	#program configuration options that are use by shconfig.py, then made global vars during execution
@@ -474,7 +481,7 @@ def addTag(filename, tag, silent="n"):
 		print("Tag (" +  tag + ") already exists for file " + filename)
 		return 1
 	if r == []:
-		print("this file doesn't exist")
+		print("this file doesn't exist: " + str(filename))
 		return 1
 	else:
 		qry2 = "insert into tags (filename, tag) values ('" + str(filename) + "', '" + str(tag) + "')"
