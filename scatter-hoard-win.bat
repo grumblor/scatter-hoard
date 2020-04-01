@@ -1,4 +1,4 @@
 
-"%cd%\python3.exe" "scatter-hoard/scatter-hoard.pyw" 
+"%cd%\python3.exe" "scatterhoard.py" 
 pause
 exit

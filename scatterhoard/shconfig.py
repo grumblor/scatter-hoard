@@ -99,7 +99,7 @@ gui = False
 guiObj = None
 imagePreview = False
 
-#httpd object that serves web UI. Accessed from a thread to prevent non blocking
+#httpd object that serves web UI. Accessed from a thread to prevent non blocking. Currently not used.
 httpd = None
 
 #error queue is an array of error messages. Rather than being dumped to stdout some functions will append to this array instead.

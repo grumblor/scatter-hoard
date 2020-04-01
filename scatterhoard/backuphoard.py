@@ -543,7 +543,7 @@ class backup():
 					self.finishedChunking
 					print(("Hash of retrieved file: " + bytes.hex(hashOfCompleted)))
 					print(("Hash of file in DB    : " + fileHashDB))
-					print("File is confirmed to be retrieved with 100% data integrity : " + self.writeDir + wack + fileName + ")")
+					print("File is confirmed to be retrieved with 100% data integrity : " + self.writeDir + wack + fileName)
 		#print("Retrieve successful. Wrote file " + self.writeDir + wack + fileName )
 		#writeLabel("Retrieve successful: " + fileName)
 		#self.stopBackup()
@@ -935,8 +935,7 @@ def queueRun(batch=1):
 			if b.retrieve(handledFile):
 				failure = True
 				failList.append(handledFile)
-		print(handledFile)
-		print(backup.running)
+		
 	while (shconfig.tagJobs != []):
 		time.sleep(0.1)
 		if shconfig.tagLock == False:

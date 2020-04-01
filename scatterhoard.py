@@ -34,6 +34,8 @@
 #need a cli argument function that will understand get g retrieve but allow filenames called just g get or retrieve. right now those filenames aren't possible
 #during batch runs, control c only cancels the current file but the file is still recorded in the DB...
 #acorn argument to create acorns of a certain size rather than number of chunks.
+#when retrieving files, if a file already exists it is over written. This needs a warning to confirm over writing first...
+
 
 import sys
 import shutil

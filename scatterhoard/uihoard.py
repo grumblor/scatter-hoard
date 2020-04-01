@@ -475,6 +475,7 @@ def mainLoopCLI():
 		Shows the current configuration for your archives.
 		Configuration options can be changed with the config command followed by the option.
 		Example: config writedir /home/username/somedirtowriteto
+		Example: config workingDB /home/username/somedbname.db
 		Example: config
 					''')
 					
@@ -508,7 +509,7 @@ def mainLoopCLI():
 				if command[1] in ['put', 'backup', 'p']:
 					print('''
 	put, backup, p
-		Arguments: 1 ... n, fullpath of files, delimited by spaces, -t
+		Arguments: 1 ... n, fullpath of files, delimited by spaces, -t, --batch
 		Hashes files, chops the files in to 100MB chunks (if needed) and delivers multiple copies of them to randomly selected storage locations. Meta data is stored in
 		database and is appended to each file chunk. Meta data is used to verify non-corruption of files.
 		The full path of files is requires. Paths with spaces in them must be enclosed in double quotes.
@@ -517,6 +518,7 @@ def mainLoopCLI():
 		Examples: put /home/yourname/file.ext
 				  backup /home/yourname/file.ext /home/yourname/file2.ext -t   (puts two files, requires tags for them)
 				  p /home/yourname/file.ext
+				  p /home/yourfolder --batch
 		Tips: In linux it you can usually right click a file in your file manager, copy it, then control-shift-v to paste the file path into scatter-hoard.
 		Related: search, add-tag, gui
 					''')
